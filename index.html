@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rodri & Caio - Boda</title>
+    <!-- Librería de Estilos Pixel Art -->
+    <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #212529;
+            font-family: 'Press Start 2P', monospace;
+            padding: 15px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 11px;
+            color: #212529;
+        }
+
+        .game-container {
+            max-width: 400px;
+            width: 100%;
+            min-height: 550px;
+            
+            /* Fondo espectacular de Río de Janeiro */
+            background-image: url('RioBG.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            padding: 25px 20px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* --- PANTALLA INICIAL (MARIO STYLE) --- */
+        .title-box {
+            text-align: center;
+            background-color: rgba(33, 37, 41, 0.9) !important;
+            margin-bottom: 50px;
+            padding: 20px 10px !important;
+        }
+
+        .title-box h1 {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+            color: #f7d51d;
+            text-shadow: 2px 2px #b01e23;
+        }
+
+        .lang-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+        /* --- HOMEPAGE (4 FOTOS) --- */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        /* Cada tarjeta/botón */
+        .menu-card {
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 4px solid #212529;
+            border-radius: 4px;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            text-decoration: none;
+            color: #212529 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+
+        .menu-card:hover {
+            transform: scale(1.04);
+            border-color: #f7d51d;
+            background-color: #ffffff;
+        }
+
+        .menu-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border: 2px solid #212529;
+            margin-bottom: 8px;
+            image-rendering: pixelated; 
+        }
+
+        .menu-card span {
+            font-size: 8px;
+            line-height: 1.4;
+            display: block;
+            margin-top: auto;
+            font-weight: bold;
+        }
+
+        .welcome-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            border: 3px double #212529;
+            border-radius: 4px;
+            font-size: 9px;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container nes-container is-rounded">
+
+    <!-- 1. PANTALLA INICIAL: IDIOMAS -->
+    <div id="screen-start" class="screen active">
+        <div class="title-box nes-container is-rounded is-dark">
+            <h1>RODRI & CAIO</h1>
+        </div>
+        
+        <div class="lang-container">
+            <button class="nes-btn is-primary" onclick="selectLanguage('es')">[ ESPAÑOL (ARG) ]</button>
+            <button class="nes-btn is-success" onclick="selectLanguage('pt')">[ PORTUGUÊS (BR) ]</button>
+            <button class="nes-btn is-warning" onclick="selectLanguage('en')">[ ENGLISH ]</button>
+        </div>
+    </div>
+
+    <!-- 2. PANTALLA HOME: MENÚ DE 4 BOTONES -->
+    <div id="screen-home" class="screen">
+        <div class="welcome-box" id="lbl-welcome">
+            <!-- Dinámico -->
+        </div>
+
+        <div class="menu-grid">
+            <!-- Botón 1: Save the Date -->
+            <a href="https://rh2bo.github.io/Rodri-CaioStheD/index.html" class="menu-card">
+                <img src="foto-save.png" alt="Save the Date">
+                <span id="lbl-save">SAVE THE DATE</span>
+            </a>
+
+            <!-- Botón 2: RSVP -->
+            <a href="https://rh2bo.github.io/Rodri-CaioRSVP/" class="menu-card">
+                <img src="foto-rsvp.png" alt="RSVP">
+                <span id="lbl-rsvp">RSVP</span>
+            </a>
+
+            <!-- Botón 3: Informaciones -->
+            <a href="Informacoes.pdf" target="_blank" class="menu-card">
+                <img src="foto-info.png" alt="Informaciones">
+                <span id="lbl-info">INFORMACIONES</span>
+            </a>
+
+            <!-- Botón 4: Regalos / Presentes -->
+            <a href="https://rh2bo.github.io/Rodri-CaioGifts/" class="menu-card">
+                <img src="foto-regalos.png" alt="Regalos">
+                <span id="lbl-gifts">PRESENTES</span>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const i18n = {
+        es: {
+            welcome: "¡SELECCIONÁ UNA OPCIÓN PAW-FECTA!",
+            save: "SAVE THE DATE",
+            rsvp: "RSVP (CONFIRMAR)",
+            info: "INFORMACIÓN",
+            gifts: "REGALOS"
+        },
+        pt: {
+            welcome: "SELECIONE UMA OPÇÃO PAW-FECTA!",
+            save: "SAVE THE DATE",
+            rsvp: "RSVP (CONFIRMAR)",
+            info: "INFORMAÇÕES",
+            gifts: "PRESENTES"
+        },
+        en: {
+            welcome: "CHOOSE A PAW-FECT OPTION!",
+            save: "SAVE THE DATE",
+            rsvp: "RSVP (CONFIRM)",
+            info: "INFORMATION",
+            gifts: "GIFTS"
+        }
+    };
+
+    function selectLanguage(lang) {
+        const t = i18n[lang];
+        
+        document.getElementById('lbl-welcome').innerText = t.welcome;
+        document.getElementById('lbl-save').innerText = t.save;
+        document.getElementById('lbl-rsvp').innerText = t.rsvp;
+        document.getElementById('lbl-info').innerText = t.info;
+        document.getElementById('lbl-gifts').innerText = t.gifts;
+
+        document.getElementById('screen-start').classList.remove('active');
+        document.getElementById('screen-home').classList.add('active');
+    }
+</script>
+</body>
+</html>
