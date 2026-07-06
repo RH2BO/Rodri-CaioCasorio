@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rodri & Caio - Boda</title>
-    <!-- Librería de Estilos Pixel Art -->
     <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     
@@ -60,11 +59,24 @@
         }
 
         .title-box h1 {
-            font-size: 16px;
-            line-height: 1.6;
+            font-size: 15px;
+            line-height: 1.8;
             margin: 0;
             color: #f7d51d;
             text-shadow: 2px 2px #b01e23;
+        }
+
+        .title-box h1 i {
+            font-family: 'Arial', 'Helvetica', sans-serif; /* Rompe el pixel art solo en esta frase */
+            font-style: italic;
+            font-weight: 900;
+            letter-spacing: 2px;
+            display: block;
+            margin-top: 5px;
+            font-size: 20px;
+            color: #ff007f; 
+            text-shadow: 2px 2px #00f0ff; 
+            transform: skewX(-15deg); 
         }
 
         .lang-container {
@@ -141,10 +153,9 @@
 
 <div class="game-container nes-container is-rounded">
 
-    <!-- 1. PANTALLA INICIAL: IDIOMAS -->
     <div id="screen-start" class="screen active">
         <div class="title-box nes-container is-rounded is-dark">
-            <h1>RODRI & CAIO</h1>
+            <h1>RODRI & CAIO's <i>Big Adventure</i></h1>
         </div>
         
         <div class="lang-container">
@@ -154,32 +165,26 @@
         </div>
     </div>
 
-    <!-- 2. PANTALLA HOME: MENÚ DE 4 BOTONES -->
     <div id="screen-home" class="screen">
         <div class="welcome-box" id="lbl-welcome">
-            <!-- Dinámico -->
-        </div>
+            </div>
 
         <div class="menu-grid">
-            <!-- Botón 1: Save the Date -->
             <a href="https://rh2bo.github.io/Rodri-CaioStheD/index.html" class="menu-card">
                 <img src="foto-save.png" alt="Save the Date">
                 <span id="lbl-save">SAVE THE DATE</span>
             </a>
 
-            <!-- Botón 2: RSVP -->
             <a href="https://rh2bo.github.io/Rodri-CaioRSVP/" class="menu-card">
                 <img src="foto-rsvp.png" alt="RSVP">
                 <span id="lbl-rsvp">RSVP</span>
             </a>
 
-            <!-- Botón 3: Informaciones -->
             <a href="Informacoes.pdf" target="_blank" class="menu-card">
                 <img src="foto-info.png" alt="Informaciones">
                 <span id="lbl-info">INFORMACIONES</span>
             </a>
 
-            <!-- Botón 4: Regalos / Presentes -->
             <a href="https://rh2bo.github.io/Rodri-CaioGifts/" class="menu-card">
                 <img src="foto-regalos.png" alt="Regalos">
                 <span id="lbl-gifts">PRESENTES</span>
@@ -192,21 +197,21 @@
 <script>
     const i18n = {
         es: {
-            welcome: "¡SELECCIONÁ UNA OPCIÓN PAW-FECTA!",
+            welcome: "¡SELECCIONÁ UNA OPCIÓN",
             save: "SAVE THE DATE",
             rsvp: "RSVP (CONFIRMAR)",
             info: "INFORMACIÓN",
             gifts: "REGALOS"
         },
         pt: {
-            welcome: "SELECIONE UMA OPÇÃO PAW-FECTA!",
+            welcome: "SELECIONE UMA OPÇÃO",
             save: "SAVE THE DATE",
             rsvp: "RSVP (CONFIRMAR)",
             info: "INFORMAÇÕES",
             gifts: "PRESENTES"
         },
         en: {
-            welcome: "CHOOSE A PAW-FECT OPTION!",
+            welcome: "CHOOSE AN OPTION",
             save: "SAVE THE DATE",
             rsvp: "RSVP (CONFIRM)",
             info: "INFORMATION",
