@@ -25,7 +25,6 @@
             max-width: 400px;
             width: 100%;
             min-height: 550px;
-            background-color: #ffffff; /* Empieza en blanco */
             padding: 25px 20px;
             border-radius: 4px;
             box-sizing: border-box;
@@ -33,11 +32,11 @@
             flex-direction: column;
             position: relative;
             overflow: hidden;
-            /* Corregido: Se fuerza a que el fondo se adapte al 100% sin recortes/zoom */
-            background-size: 100% 100%;
-            background-position: center;
+            
+            background-image: url('BGintro.jpg');
+            background-size: auto 100%; 
+            background-position: 0% center; 
             background-repeat: no-repeat;
-            transition: background-image 1s ease-in-out;
         }
 
         .screen {
@@ -52,7 +51,22 @@
             display: flex;
         }
 
-        /* --- CINEMÁTICA DE INTRODUCCIÓN --- */
+        /* --- BOTÓN RETRO DE AUDIO (SOLO EMOJIS) --- */
+        #audio-control {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 15; 
+            padding: 6px 10px;
+            font-size: 14px; /* Un poquito más grande para que se luzca el emoji */
+            cursor: pointer;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- CAPA DE INTRODUCCIÓN CINEMÁTICA --- */
         #screen-intro {
             position: absolute;
             top: 0;
@@ -64,30 +78,38 @@
             justify-content: center;
             align-items: center;
             z-index: 10;
+            transition: opacity 0.6s ease-in-out;
         }
 
         .panorama-viewer {
             width: 100%;
             height: 100%;
             background-image: url('BGintro.jpg');
-            background-size: auto 100%; /* Asegura que se vea el alto completo de la intro */
+            background-size: auto 100%; 
             background-repeat: no-repeat;
             opacity: 0;
-            animation: introCinematica 8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            animation: introCinematica 9s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
 
         @keyframes introCinematica {
-            0% { opacity: 0; background-position: 100% center; }
-            10% { opacity: 1; background-position: 100% center; }
-            30% { background-position: 100% center; }
-            40% { background-position: 50% center; }
-            65% { background-position: 50% center; }
-            75% { background-position: 0% center; opacity: 1; }
-            90% { background-position: 0% center; opacity: 1; }
-            100% { background-position: 0% center; opacity: 0; }
+            0% { opacity: 0; background-position: 100% center; transform: translateX(0); }
+            5% { opacity: 1; background-position: 100% center; transform: translateX(0); }
+            25% { background-position: 100% center; transform: translateX(0); }
+            27% { transform: translateX(-3px); }
+            29% { transform: translateX(3px); }
+            31% { transform: translateX(-3px); }
+            32% { background-position: 100% center; transform: translateX(0); }
+            40% { background-position: 50% center; transform: translateX(0); }
+            58% { background-position: 50% center; transform: translateX(0); }
+            60% { transform: translateX(-3px); }
+            62% { transform: translateX(3px); }
+            64% { transform: translateX(-3px); }
+            65% { background-position: 50% center; transform: translateX(0); }
+            73% { background-position: 0% center; transform: translateX(0); }
+            100% { background-position: 0% center; opacity: 1; transform: translateX(0); }
         }
 
-        /* --- PANTALLA INICIAL (MARIO STYLE) --- */
+        /* --- PANTALLA INICIAL --- */
         .title-box {
             text-align: center;
             background-color: rgba(33, 37, 41, 0.9) !important;
@@ -119,7 +141,6 @@
             transform: skewX(-15deg); 
         }
 
-        /* DONA FLOR: Capa corregida adelante con z-index alto */
         #flor-character {
             position: absolute;
             top: 48%;
@@ -131,7 +152,7 @@
             opacity: 0;
             filter: blur(15px);
             transition: opacity 0.8s ease-out, filter 0.8s ease-out;
-            z-index: 5; /* Asegura ir por delante de cualquier fondo y del layout */
+            z-index: 5; 
         }
 
         .lang-container {
@@ -212,6 +233,10 @@
 
 <div class="game-container nes-container is-rounded" id="main-container">
 
+    <audio id="bg-music" src="musica-retro.mp3" loop></audio>
+
+    <button id="audio-control" class="nes-btn is-error" onclick="toggleMúsica()">🔇</button>
+
     <div id="screen-intro">
         <div class="panorama-viewer"></div>
     </div>
@@ -259,37 +284,53 @@
 </div>
 
 <script>
+    const miMusica = document.getElementById('bg-music');
+    const btnAudio = document.getElementById('audio-control');
+
+    // AJUSTADO: Alterna limpiamente los emojis 🔊 (encendido / verde) y 🔇 (silenciado / rojo)
+    function toggleMúsica() {
+        if (miMusica.paused) {
+            miMusica.play().then(() => {
+                btnAudio.innerText = "🔊";
+                btnAudio.classList.remove('is-error');
+                btnAudio.classList.add('is-success');
+            }).catch(err => console.log("Bloqueado por el navegador:", err));
+        } else {
+            miMusica.pause();
+            btnAudio.innerText = "🔇";
+            btnAudio.classList.remove('is-success');
+            btnAudio.classList.add('is-error');
+        }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
         const introScreen = document.getElementById('screen-intro');
-        const container = document.getElementById('main-container');
         const logo = document.getElementById('main-logo');
         const flor = document.getElementById('flor-character');
         const buttons = document.getElementById('main-buttons');
 
-        // 1. Esperamos los 8 segundos del panorama animado
         setTimeout(() => {
-            introScreen.style.display = 'none';
-            container.style.backgroundImage = "url('RioBG.png')";
+            introScreen.style.opacity = '0';
             
-            // 2. Aparece el logo
             setTimeout(() => {
-                logo.style.opacity = '1';
+                introScreen.style.display = 'none';
                 
-                // 3. Aparece Flor (Blur in desde desenfoque)
                 setTimeout(() => {
-                    flor.style.opacity = '1';
-                    flor.style.filter = 'blur(0px)';
+                    logo.style.opacity = '1';
                     
-                    // 4. Por último, entran los botones de idioma
                     setTimeout(() => {
-                        buttons.style.opacity = '1';
-                    }, 900);
+                        flor.style.opacity = '1';
+                        flor.style.filter = 'blur(0px)';
+                        
+                        setTimeout(() => {
+                            buttons.style.opacity = '1';
+                        }, 900);
+                    }, 800);
+                }, 400);
 
-                }, 800);
+            }, 600);
 
-            }, 400);
-
-        }, 8000); 
+        }, 9000); 
     });
 
     const i18n = {
@@ -317,8 +358,11 @@
     };
 
     function selectLanguage(lang) {
+        if (miMusica.paused) {
+            toggleMúsica();
+        }
+
         const t = i18n[lang];
-        
         document.getElementById('lbl-welcome').innerText = t.welcome;
         document.getElementById('lbl-save').innerText = t.save;
         document.getElementById('lbl-rsvp').innerText = t.rsvp;
