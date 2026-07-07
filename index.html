@@ -37,6 +37,14 @@
             background-size: auto 100%; 
             background-position: 0% center; 
             background-repeat: no-repeat;
+            transition: background 0.3s ease;
+        }
+
+        /* Cambia el fondo a terminal de espías cuando entra a informaciones */
+        .game-container.carmen-mode {
+            background-image: none !important;
+            background-color: #0b1015 !important;
+            border: 4px solid #3f51b5 !important;
         }
 
         .screen {
@@ -51,14 +59,14 @@
             display: flex;
         }
 
-        /* --- BOTÓN RETRO DE AUDIO (SOLO EMOJIS) --- */
+        /* --- BOTÓN RETRO DE AUDIO --- */
         #audio-control {
             position: absolute;
             top: 15px;
             right: 15px;
             z-index: 15; 
             padding: 6px 10px;
-            font-size: 14px; /* Un poquito más grande para que se luzca el emoji */
+            font-size: 14px; 
             cursor: pointer;
             line-height: 1;
             display: flex;
@@ -227,6 +235,76 @@
             margin-bottom: 15px;
             font-weight: bold;
         }
+
+        /* --- PANTALLA ESTILO CARMEN SANDIEGO --- */
+        .carmen-title {
+            color: #00ff66;
+            text-align: center;
+            font-size: 10px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 4px #00ff66;
+        }
+
+        .carmen-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .carmen-btn {
+            font-size: 8px !important;
+            text-align: left !important;
+        }
+
+        .dossier-panel {
+            background-color: #141d26;
+            border: 2px solid #00ff66;
+            padding: 12px;
+            color: #ffffff;
+            height: 250px;
+            overflow-y: auto;
+            font-size: 9px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 10px rgba(0,255,102,0.2);
+        }
+
+        /* Scrollbar retro de la terminal */
+        .dossier-panel::-webkit-scrollbar { width: 6px; }
+        .dossier-panel::-webkit-scrollbar-track { background: #141d26; }
+        .dossier-panel::-webkit-scrollbar-thumb { background: #00ff66; }
+
+        .dossier-panel h3 {
+            color: #f7d51d;
+            font-size: 10px;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            border-bottom: 1px dashed #00ff66;
+            padding-bottom: 2px;
+        }
+
+        .dossier-panel p, .dossier-panel ul {
+            margin: 0 0 10px 0;
+            padding-left: 0;
+        }
+
+        .dossier-panel ul { list-style: none; }
+        .dossier-panel li { margin-bottom: 8px; position: relative; padding-left: 12px;}
+        .dossier-panel li::before { content: ">"; position: absolute; left: 0; color: #00ff66; }
+
+        .dossier-panel a {
+            color: #00ffff;
+            text-decoration: underline;
+            word-break: break-all;
+            font-size: 8px;
+            display: inline-block;
+            margin-top: 2px;
+        }
+
+        .btn-back-container {
+            margin-top: auto;
+        }
     </style>
 </head>
 <body>
@@ -237,10 +315,12 @@
 
     <button id="audio-control" class="nes-btn is-error" onclick="toggleMúsica()">🔇</button>
 
+    <!-- PANTALLA DE INTRODUCCIÓN CINEMÁTICA -->
     <div id="screen-intro">
         <div class="panorama-viewer"></div>
     </div>
 
+    <!-- 1. PANTALLA INICIAL: IDIOMAS -->
     <div id="screen-start" class="screen active">
         <div class="title-box nes-container is-rounded is-dark" id="main-logo">
             <h1>RODRI & CAIO's <i>Big Adventure</i></h1>
@@ -255,6 +335,7 @@
         </div>
     </div>
 
+    <!-- 2. PANTALLA HOME: MENÚ DE 4 BOTONES -->
     <div id="screen-home" class="screen">
         <div class="welcome-box" id="lbl-welcome"></div>
 
@@ -269,10 +350,11 @@
                 <span id="lbl-rsvp">RSVP</span>
             </a>
 
-            <a href="Informacoes.pdf" target="_blank" class="menu-card">
+            <!-- MODIFICADO: Ahora llama a una función JS en vez de abrir un PDF -->
+            <div class="menu-card" onclick="openInformaciones()">
                 <img src="foto-info.png" alt="Informaciones">
                 <span id="lbl-info">INFORMACIONES</span>
-            </a>
+            </div>
 
             <a href="https://rh2bo.github.io/Rodri-CaioGifts/" class="menu-card">
                 <img src="foto-regalos.png" alt="Regalos">
@@ -281,20 +363,40 @@
         </div>
     </div>
 
+    <!-- 3. NUEVA PANTALLA: INFORMACIONES (ESTILO CARMEN SANDIEGO) -->
+    <div id="screen-info-page" class="screen">
+        <div class="carmen-title" id="info-terminal-title">ACME DETECTIVE TERMINAL</div>
+        
+        <!-- Dos botones grandes de Dossier -->
+        <div class="carmen-nav">
+            <button class="nes-btn is-warning carmen-btn" id="btn-sub-evento" onclick="showDossier('evento')">📂 EL EVENTO</button>
+            <button class="nes-btn is-primary carmen-btn" id="btn-sub-quests" onclick="showDossier('quests')">🗺️ MISIONES SECUNDARIAS</button>
+        </div>
+
+        <!-- Panel de Datos -->
+        <div class="dossier-panel" id="dossier-content">
+            <!-- Se llena dinámicamente con JS -->
+        </div>
+
+        <div class="btn-back-container">
+            <button class="nes-btn is-error style-block" style="width:100%" id="btn-info-back" onclick="closeInformaciones()">[ VOLVER ]</button>
+        </div>
+    </div>
+
 </div>
 
 <script>
     const miMusica = document.getElementById('bg-music');
     const btnAudio = document.getElementById('audio-control');
+    let currentLang = 'es';
 
-    // AJUSTADO: Alterna limpiamente los emojis 🔊 (encendido / verde) y 🔇 (silenciado / rojo)
     function toggleMúsica() {
         if (miMusica.paused) {
             miMusica.play().then(() => {
                 btnAudio.innerText = "🔊";
                 btnAudio.classList.remove('is-error');
                 btnAudio.classList.add('is-success');
-            }).catch(err => console.log("Bloqueado por el navegador:", err));
+            }).catch(err => console.log(err));
         } else {
             miMusica.pause();
             btnAudio.innerText = "🔇";
@@ -311,25 +413,19 @@
 
         setTimeout(() => {
             introScreen.style.opacity = '0';
-            
             setTimeout(() => {
                 introScreen.style.display = 'none';
-                
                 setTimeout(() => {
                     logo.style.opacity = '1';
-                    
                     setTimeout(() => {
                         flor.style.opacity = '1';
                         flor.style.filter = 'blur(0px)';
-                        
                         setTimeout(() => {
                             buttons.style.opacity = '1';
                         }, 900);
                     }, 800);
                 }, 400);
-
             }, 600);
-
         }, 9000); 
     });
 
@@ -339,28 +435,199 @@
             save: "SAVE THE DATE",
             rsvp: "RSVP (CONFIRMAR)",
             info: "INFORMACIÓN",
-            gifts: "REGALOS"
+            gifts: "REGALOS",
+            terminal: "INTERPOL: ARCHIVOS DE RÍO",
+            subEvento: "📂 EL EVENTO",
+            subQuests: "🗺️ MISIONES SECUNDARIAS",
+            back: "[ VOLVER ]",
+            selectPrompt: "SELECCIONE UN ARCHIVO PARA INVESTIGAR..."
         },
         pt: {
             welcome: "SELECIONE UMA OPÇÃO!",
             save: "SAVE THE DATE",
             rsvp: "RSVP (CONFIRMAR)",
             info: "INFORMAÇÕES",
-            gifts: "PRESENTES"
+            gifts: "PRESENTES",
+            terminal: "INTERPOL: ARQUIVOS DO RIO",
+            subEvento: "📂 O EVENTO",
+            subQuests: "🗺️ MISSÕES SECUNDÁRIAS",
+            back: "[ VOLTAR ]",
+            selectPrompt: "SELECIONE UM ARQUIVO PARA INVESTIGAR..."
         },
         en: {
             welcome: "CHOOSE AN OPTION!",
             save: "SAVE THE DATE",
             rsvp: "RSVP (CONFIRM)",
             info: "INFORMATION",
-            gifts: "GIFTS"
+            gifts: "GIFTS",
+            terminal: "INTERPOL: RIO DOSSIER",
+            subEvento: "📂 THE EVENTO",
+            subQuests: "🗺️ SIDE QUESTS",
+            back: "[ BACK ]",
+            selectPrompt: "SELECT A FILE TO INVESTIGATE..."
+        }
+    };
+
+    // Base de datos de información estructurada por idioma y categoría
+    const dossierData = {
+        es: {
+            evento: `
+                <h3>📍 DÓNDE</h3>
+                <p>Marina da Gloria<br>Av. Infante Dom Henrique, S/N - Glória, Río de Janeiro</p>
+                <a href="https://maps.app.goo.gl/6QSq7Yt2yYkJqzeC9" target="_blank">VER EN MAPA MAPS ></a>
+                
+                <h3>⏰ CUÁNDO</h3>
+                <p>17/04/2025 a las 11:30 am<br><strong>¡Puntual!</strong> El regreso estimado será a las 20:00 hs.</p>
+                
+                <h3>⚠️ DETALLES IMPORTANTES</h3>
+                <ul>
+                    <li>Nuestra fiesta va a ser arriba de un barco, por lo que es de vital importancia no usar zapatos incómodos.</li>
+                    <li>En nuestra primera parada habrá opción de tirarse al agua a nadar, así que si quieren, ¡lleven traje de baño!</li>
+                    <li>Nos encontramos directo en la entrada principal de la Marina da Gloria.</li>
+                </ul>
+            `,
+            quests: `
+                <h3>🏨 ¿DÓNDE HOSPEDARSE?</h3>
+                <p>Ipanema y Leblon son lugares lindos si quieren tener unos días más de playa. Esos barrios son los más cómodos para quedarse, pero atentis que no son muy cerca de la Marina :)</p>
+                
+                <h3>🍻 BOTEQUINHOS RECOMMENDED</h3>
+                <ul>
+                    <li>Fala Bar<br><a href="https://maps.app.goo.gl/6QSq7Yt2yYkJqzeC9" target="_blank">Google Maps ></a></li>
+                    <li>Chanchada<br><a href="https://maps.app.goo.gl/e8WDuU3UF2nbS45t6" target="_blank">Google Maps ></a></li>
+                    <li>Tijolada<br><a href="https://maps.app.goo.gl/rCE1ieimCM6taL2z6" target="_blank">Google Maps ></a></li>
+                </ul>
+
+                <h3>🍽️ DÓNDE COMER</h3>
+                <ul>
+                    <li>Brasseiro Labuta<br><a href="https://maps.app.goo.gl/BkMJ2ekiCb61NG4w7" target="_blank">Google Maps ></a></li>
+                    <li>Katz-Su<br><a href="https://maps.app.goo.gl/TCZaHtEecqe4RHTm7" target="_blank">Google Maps ></a></li>
+                    <li>Galeto Leblon<br><a href="https://maps.app.goo.gl/SbpHrrhNYgzRWWuz5" target="_blank">Google Maps ></a></li>
+                    <li>Teva Bistró (Veg)<br><a href="https://maps.app.goo.gl/phFUx74csvtCmvws6" target="_blank">Google Maps ></a></li>
+                </ul>
+
+                <h3>☕ DESAYUNAR / MERENDAR</h3>
+                <ul>
+                    <li>ASA Açaí<br><a href="https://maps.app.goo.gl/xdaLrxcZ2PdfiLT86" target="_blank">Google Maps ></a></li>
+                    <li>Araucaria Pães<br><a href="https://maps.app.goo.gl/bsxLQXmQnizjZ43w6" target="_blank">Google Maps ></a></li>
+                    <li>Badó Pães<br><a href="https://maps.app.goo.gl/pKCV2duwmxy5urLM6" target="_blank">Google Maps ></a></li>
+                    <li>The Slow Bakery<br><a href="https://maps.app.goo.gl/HTxEPYVz8yc4a3cs6" target="_blank">Google Maps ></a></li>
+                </ul>
+
+                <h3>🏖️ IR A LA PLAYA</h3>
+                <ul>
+                    <li>Leme - Posto 1</li>
+                    <li>Ipanema - Posto 8</li>
+                    <li>Leblon - Posto 12</li>
+                </ul>
+            `
+        },
+        pt: {
+            evento: `
+                <h3>📍 ONDE</h3>
+                <p>Marina da Gloria<br>Av. Infante Dom Henrique, S/N - Glória, Rio de Janeiro</p>
+                <a href="https://maps.app.goo.gl/6QSq7Yt2yYkJqzeC9" target="_blank">VER NO MAPA ></a>
+                
+                <h3>⏰ QUANDO</h3>
+                <p>17/04/2025 às 11:30 am<br><strong>Pontual!</strong> O retorno estimado será às 20:00 h.</p>
+                
+                <h3>⚠️ DETALLES IMPORTANTES</h3>
+                <ul>
+                    <li>A nossa festa será a bordo de um barco, por isso é super importante não usar sapatos desconfortáveis.</li>
+                    <li>Na nossa primeira parada haverá a opção de entrar na água para nadar, então se quiserem, levem roupa de banho!</li>
+                    <li>Nos encontraremos diretamente na entrada principal da Marina da Glória.</li>
+                </ul>
+            `,
+            quests: `
+                <h3>🏨 ONDE SE HOSPEDAR?</h3>
+                <p>Ipanema e Leblon são lugares lindos se você quer curtir uns dias de praia. Esses bairros são os mais confortáveis, mas atenção: não ficam muito perto da Marina :)</p>
+                
+                <h3>🍻 BOTEQUINHOS</h3>
+                <ul>
+                    <li>Fala Bar<br><a href="https://maps.app.goo.gl/6QSq7Yt2yYkJqzeC9" target="_blank">Google Maps ></a></li>
+                    <li>Chanchada<br><a href="https://maps.app.goo.gl/e8WDuU3UF2nbS45t6" target="_blank">Google Maps ></a></li>
+                    <li>Tijolada<br><a href="https://maps.app.goo.gl/rCE1ieimCM6taL2z6" target="_blank">Google Maps ></a></li>
+                </ul>
+
+                <h3>🍽️ ONDE COMER</h3>
+                <ul>
+                    <li>Brasseiro Labuta<br><a href="https://maps.app.goo.gl/BkMJ2ekiCb61NG4w7" target="_blank">Google Maps ></a></li>
+                    <li>Katz-Su<br><a href="https://maps.app.goo.gl/TCZaHtEecqe4RHTm7" target="_blank">Google Maps ></a></li>
+                    <li>Galeto Leblon<br><a href="https://maps.app.goo.gl/SbpHrrhNYgzRWWuz5" target="_blank">Google Maps ></a></li>
+                    <li>Teva Bistró (Veg)<br><a href="https://maps.app.goo.gl/phFUx74csvtCmvws6" target="_blank">Google Maps ></a></li>
+                </ul>
+
+                <h3>☕ CAFÉ DA MANHÃ / LANCHE</h3>
+                <ul>
+                    <li>ASA Açaí<br><a href="https://maps.app.goo.gl/xdaLrxcZ2PdfiLT86" target="_blank">Google Maps ></a></li>
+                    <li>Araucaria Pães<br><a href="https://maps.app.goo.gl/bsxLQXmQnizjZ43w6" target="_blank">Google Maps ></a></li>
+                    <li>Badó Pães<br><a href="https://maps.app.goo.gl/pKCV2duwmxy5urLM6" target="_blank">Google Maps ></a></li>
+                    <li>The Slow Bakery<br><a href="https://maps.app.goo.gl/HTxEPYVz8yc4a3cs6" target="_blank">Google Maps ></a></li>
+                </ul>
+
+                <h3>🏖️ IR À PRAIA</h3>
+                <ul>
+                    <li>Leme - Posto 1</li>
+                    <li>Ipanema - Posto 8</li>
+                    <li>Leblon - Posto 12</li>
+                </ul>
+            `
+        },
+        en: {
+            evento: `
+                <h3>📍 WHERE</h3>
+                <p>Marina da Gloria<br>Av. Infante Dom Henrique, S/N - Glória, Rio de Janeiro</p>
+                <a href="https://maps.app.goo.gl/6QSq7Yt2yYkJqzeC9" target="_blank">OPEN MAP ></a>
+                
+                <h3>⏰ WHEN</h3>
+                <p>17/04/2025 at 11:30 am<br><strong>Be sharp!</strong> Estimated return is at 8:00 pm.</p>
+                
+                <h3>⚠️ IMPORTANT DETAILS</h3>
+                <ul>
+                    <li>Our party will be on a boat, so it's vital not to wear uncomfortable shoes.</li>
+                    <li>At our first stop, there will be an option to swim, so bring your swimsuit if you like!</li>
+                    <li>We will meet directly at the main entrance of Marina da Gloria.</li>
+                </ul>
+            `,
+            quests: `
+                <h3>🏨 WHERE TO STAY?</h3>
+                <p>Ipanema and Leblon are beautiful spots if you want some extra beach days. Those neighborhoods are the most convenient to stay in, but keep in mind they are not very close to the Marina :)</p>
+                
+                <h3>🍻 BOTEQUINHOS (LOCAL PUBS)</h3>
+                <ul>
+                    <li>Fala Bar<br><a href="https://maps.app.goo.gl/6QSq7Yt2yYkJqzeC9" target="_blank">Google Maps ></a></li>
+                    <li>Chanchada<br><a href="https://maps.app.goo.gl/e8WDuU3UF2nbS45t6" target="_blank">Google Maps ></a></li>
+                    <li>Tijolada<br><a href="https://maps.app.goo.gl/rCE1ieimCM6taL2z6" target="_blank">Google Maps ></a></li>
+                </ul>
+
+                <h3>🍽️ WHERE TO EAT</h3>
+                <ul>
+                    <li>Brasseiro Labuta<br><a href="https://maps.app.goo.gl/BkMJ2ekiCb61NG4w7" target="_blank">Google Maps ></a></li>
+                    <li>Katz-Su<br><a href="https://maps.app.goo.gl/TCZaHtEecqe4RHTm7" target="_blank">Google Maps ></a></li>
+                    <li>Galeto Leblon<br><a href="https://maps.app.goo.gl/SbpHrrhNYgzRWWuz5" target="_blank">Google Maps ></a></li>
+                    <li>Teva Bistró (Veg)<br><a href="https://maps.app.goo.gl/phFUx74csvtCmvws6" target="_blank">Google Maps ></a></li>
+                </ul>
+
+                <h3>☕ BREAKFAST / BAKERY</h3>
+                <ul>
+                    <li>ASA Açaí<br><a href="https://maps.app.goo.gl/xdaLrxcZ2PdfiLT86" target="_blank">Google Maps ></a></li>
+                    <li>Araucaria Pães<br><a href="https://maps.app.goo.gl/bsxLQXmQnizjZ43w6" target="_blank">Google Maps ></a></li>
+                    <li>Badó Pães<br><a href="https://maps.app.goo.gl/pKCV2duwmxy5urLM6" target="_blank">Google Maps ></a></li>
+                    <li>The Slow Bakery<br><a href="https://maps.app.goo.gl/HTxEPYVz8yc4a3cs6" target="_blank">Google Maps ></a></li>
+                </ul>
+
+                <h3>🏖️ BEACH SPOTS</h3>
+                <ul>
+                    <li>Leme - Posto 1</li>
+                    <li>Ipanema - Posto 8</li>
+                    <li>Leblon - Posto 12</li>
+                </ul>
+            `
         }
     };
 
     function selectLanguage(lang) {
-        if (miMusica.paused) {
-            toggleMúsica();
-        }
+        currentLang = lang;
+        if (miMusica.paused) { toggleMúsica(); }
 
         const t = i18n[lang];
         document.getElementById('lbl-welcome').innerText = t.welcome;
@@ -369,8 +636,40 @@
         document.getElementById('lbl-info').innerText = t.info;
         document.getElementById('lbl-gifts').innerText = t.gifts;
 
+        // Traducir los elementos estáticos de la pantalla de información
+        document.getElementById('info-terminal-title').innerText = t.terminal;
+        document.getElementById('btn-sub-evento').innerText = t.subEvento;
+        document.getElementById('btn-sub-quests').innerText = t.subQuests;
+        document.getElementById('btn-info-back').innerText = t.back;
+
         document.getElementById('screen-start').classList.remove('active');
         document.getElementById('screen-home').classList.add('active');
+    }
+
+    function openInformaciones() {
+        document.getElementById('main-container').classList.add('carmen-mode');
+        document.getElementById('screen-home').classList.remove('active');
+        document.getElementById('screen-info-page').classList.add('active');
+        
+        // Carga por defecto el prompt inicial o directamente el evento
+        showDossier('evento');
+    }
+
+    function closeInformaciones() {
+        document.getElementById('main-container').classList.remove('carmen-mode');
+        document.getElementById('screen-info-page').classList.remove('active');
+        document.getElementById('screen-home').classList.add('active');
+    }
+
+    function showDossier(type) {
+        const contentPanel = document.getElementById('dossier-content');
+        // Efecto rápido de "limpieza" simulando carga de pantalla CRT
+        contentPanel.innerHTML = "LOADING DATA...";
+        
+        setTimeout(() => {
+            contentPanel.innerHTML = dossierData[currentLang][type];
+            contentPanel.scrollTop = 0; // Vuelve arriba el scroll del dossier
+        }, 150);
     }
 </script>
 </body>
