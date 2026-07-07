@@ -25,18 +25,19 @@
             max-width: 400px;
             width: 100%;
             min-height: 550px;
-            
-            /* Fondo espectacular de Río de Janeiro */
-            background-image: url('RioBG.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            
+            background-color: #ffffff; /* Empieza en blanco */
             padding: 25px 20px;
             border-radius: 4px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            /* Corregido: Se fuerza a que el fondo se adapte al 100% sin recortes/zoom */
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 1s ease-in-out;
         }
 
         .screen {
@@ -44,10 +45,46 @@
             flex-direction: column;
             width: 100%;
             flex-grow: 1;
+            z-index: 2;
         }
 
         .screen.active {
             display: flex;
+        }
+
+        /* --- CINEMÁTICA DE INTRODUCCIÓN --- */
+        #screen-intro {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .panorama-viewer {
+            width: 100%;
+            height: 100%;
+            background-image: url('BGintro.jpg');
+            background-size: auto 100%; /* Asegura que se vea el alto completo de la intro */
+            background-repeat: no-repeat;
+            opacity: 0;
+            animation: introCinematica 8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        @keyframes introCinematica {
+            0% { opacity: 0; background-position: 100% center; }
+            10% { opacity: 1; background-position: 100% center; }
+            30% { background-position: 100% center; }
+            40% { background-position: 50% center; }
+            65% { background-position: 50% center; }
+            75% { background-position: 0% center; opacity: 1; }
+            90% { background-position: 0% center; opacity: 1; }
+            100% { background-position: 0% center; opacity: 0; }
         }
 
         /* --- PANTALLA INICIAL (MARIO STYLE) --- */
@@ -56,6 +93,9 @@
             background-color: rgba(33, 37, 41, 0.9) !important;
             margin-bottom: 50px;
             padding: 20px 10px !important;
+            opacity: 0;
+            transition: opacity 0.8s ease-out;
+            z-index: 4;
         }
 
         .title-box h1 {
@@ -67,7 +107,7 @@
         }
 
         .title-box h1 i {
-            font-family: 'Arial', 'Helvetica', sans-serif; /* Rompe el pixel art solo en esta frase */
+            font-family: 'Arial', 'Helvetica', sans-serif;
             font-style: italic;
             font-weight: 900;
             letter-spacing: 2px;
@@ -79,12 +119,32 @@
             transform: skewX(-15deg); 
         }
 
+        /* DONA FLOR: Capa corregida adelante con z-index alto */
+        #flor-character {
+            position: absolute;
+            top: 48%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: auto;
+            image-rendering: pixelated;
+            opacity: 0;
+            filter: blur(15px);
+            transition: opacity 0.8s ease-out, filter 0.8s ease-out;
+            z-index: 5; /* Asegura ir por delante de cualquier fondo y del layout */
+        }
+
         .lang-container {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-top: auto;
-            margin-bottom: auto;
+            gap: 12px;
+            position: absolute;
+            bottom: 40px;
+            left: 20px;
+            right: 20px;
+            opacity: 0;
+            transition: opacity 0.8s ease-out;
+            z-index: 6;
         }
 
         /* --- HOMEPAGE (4 FOTOS) --- */
@@ -95,7 +155,6 @@
             margin-top: 10px;
         }
 
-        /* Cada tarjeta/botón */
         .menu-card {
             background-color: rgba(255, 255, 255, 0.95);
             border: 4px solid #212529;
@@ -151,14 +210,20 @@
 </head>
 <body>
 
-<div class="game-container nes-container is-rounded">
+<div class="game-container nes-container is-rounded" id="main-container">
+
+    <div id="screen-intro">
+        <div class="panorama-viewer"></div>
+    </div>
 
     <div id="screen-start" class="screen active">
-        <div class="title-box nes-container is-rounded is-dark">
+        <div class="title-box nes-container is-rounded is-dark" id="main-logo">
             <h1>RODRI & CAIO's <i>Big Adventure</i></h1>
         </div>
+
+        <img src="FlorYas.png" alt="Dona Flor" id="flor-character">
         
-        <div class="lang-container">
+        <div class="lang-container" id="main-buttons">
             <button class="nes-btn is-primary" onclick="selectLanguage('es')">[ ESPAÑOL (ARG) ]</button>
             <button class="nes-btn is-success" onclick="selectLanguage('pt')">[ PORTUGUÊS (BR) ]</button>
             <button class="nes-btn is-warning" onclick="selectLanguage('en')">[ ENGLISH ]</button>
@@ -166,8 +231,7 @@
     </div>
 
     <div id="screen-home" class="screen">
-        <div class="welcome-box" id="lbl-welcome">
-            </div>
+        <div class="welcome-box" id="lbl-welcome"></div>
 
         <div class="menu-grid">
             <a href="https://rh2bo.github.io/Rodri-CaioStheD/index.html" class="menu-card">
@@ -195,23 +259,56 @@
 </div>
 
 <script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const introScreen = document.getElementById('screen-intro');
+        const container = document.getElementById('main-container');
+        const logo = document.getElementById('main-logo');
+        const flor = document.getElementById('flor-character');
+        const buttons = document.getElementById('main-buttons');
+
+        // 1. Esperamos los 8 segundos del panorama animado
+        setTimeout(() => {
+            introScreen.style.display = 'none';
+            container.style.backgroundImage = "url('RioBG.png')";
+            
+            // 2. Aparece el logo
+            setTimeout(() => {
+                logo.style.opacity = '1';
+                
+                // 3. Aparece Flor (Blur in desde desenfoque)
+                setTimeout(() => {
+                    flor.style.opacity = '1';
+                    flor.style.filter = 'blur(0px)';
+                    
+                    // 4. Por último, entran los botones de idioma
+                    setTimeout(() => {
+                        buttons.style.opacity = '1';
+                    }, 900);
+
+                }, 800);
+
+            }, 400);
+
+        }, 8000); 
+    });
+
     const i18n = {
         es: {
-            welcome: "¡SELECCIONÁ UNA OPCIÓN",
+            welcome: "¡SELECCIONÁ UNA OPCIÓN!",
             save: "SAVE THE DATE",
             rsvp: "RSVP (CONFIRMAR)",
             info: "INFORMACIÓN",
             gifts: "REGALOS"
         },
         pt: {
-            welcome: "SELECIONE UMA OPÇÃO",
+            welcome: "SELECIONE UMA OPÇÃO!",
             save: "SAVE THE DATE",
             rsvp: "RSVP (CONFIRMAR)",
             info: "INFORMAÇÕES",
             gifts: "PRESENTES"
         },
         en: {
-            welcome: "CHOOSE AN OPTION",
+            welcome: "CHOOSE AN OPTION!",
             save: "SAVE THE DATE",
             rsvp: "RSVP (CONFIRM)",
             info: "INFORMATION",
