@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Rodri & Caio's Big Adventure!</title>
     <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -33,7 +33,7 @@
             position: relative;
             overflow: hidden;
             
-            background-image: url('BGintro.jpg');
+            background-image: url('assets/homepage/BGintro.jpg');
             background-size: auto 100%; 
             background-position: 0% center; 
             background-repeat: no-repeat;
@@ -61,27 +61,26 @@
 
         /* --- BOTÓN RETRO DE AUDIO --- */
         #audio-control {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 15; 
-            padding: 6px 10px;
-            font-size: 14px; 
+            position: fixed;
+            top: auto;
+            right: 12px;
+            bottom: 12px;
+            z-index: 30;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            font-size: 16px;
             cursor: pointer;
             line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: grid;
+            place-items: center;
         }
 
         /* --- CAPA DE INTRODUCCIÓN CINEMÁTICA --- */
         #screen-intro {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #ffffff;
+            position: fixed;
+            inset: 0;
+            background-color: #000000;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -89,13 +88,27 @@
             transition: opacity 0.6s ease-in-out;
         }
 
+        #intro-start-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 11;
+            min-width: 140px;
+            padding: 12px 20px;
+            font-size: 11px;
+            transform: translate(-50%, -50%);
+        }
+
         .panorama-viewer {
             width: 100%;
             height: 100%;
-            background-image: url('BGintro.jpg');
+            background-image: url('assets/homepage/BGintro.jpg');
             background-size: auto 100%; 
             background-repeat: no-repeat;
             opacity: 0;
+        }
+
+        .panorama-viewer.is-playing {
             animation: introCinematica 9s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
 
@@ -224,6 +237,43 @@
             font-weight: bold;
         }
 
+        .menu-card.is-complete {
+            background-color: rgba(205, 208, 205, 0.92);
+            border-color: #7d827d;
+            color: #626862 !important;
+        }
+
+        .menu-card.is-complete img {
+            filter: grayscale(0.35);
+            opacity: 0.82;
+        }
+
+        .menu-card.is-complete .menu-card-caption {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: auto;
+        }
+
+        .menu-card.is-complete .menu-card-caption #lbl-save,
+        .menu-card.is-complete .completion-check {
+            display: inline;
+            margin-top: 0;
+        }
+
+        .menu-card.is-complete .completion-check {
+            color: #248a45;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .menu-card.is-complete:hover {
+            border-color: #f7d51d;
+        }
+
         .welcome-box {
             background-color: rgba(255, 255, 255, 0.95);
             padding: 10px;
@@ -245,6 +295,10 @@
             text-shadow: 0 0 4px #00ff66;
         }
 
+        #screen-info-page {
+            min-height: 0;
+        }
+
         .carmen-nav {
             display: flex;
             flex-direction: column;
@@ -257,12 +311,19 @@
             text-align: left !important;
         }
 
+        .carmen-btn.pre-wedding-btn:disabled {
+            filter: grayscale(1);
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
         .dossier-panel {
             background-color: #141d26;
             border: 2px solid #00ff66;
             padding: 12px;
             color: #ffffff;
-            height: 250px;
+            flex: 1;
+            min-height: 0;
             overflow-y: auto;
             font-size: 9px;
             line-height: 1.6;
@@ -305,19 +366,28 @@
         .btn-back-container {
             margin-top: auto;
         }
+
+        @media (max-width: 599px) {
+            .game-container.carmen-mode {
+                height: 100vh;
+                height: 100dvh;
+            }
+        }
     </style>
+    <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
 
 <div class="game-container nes-container is-rounded" id="main-container">
 
-    <audio id="bg-music" src="musica-retro.mp3" loop></audio>
+    <audio id="bg-music" src="assets/homepage/musica-retro.mp3" loop preload="auto" data-start-on-click="true"></audio>
 
-    <button id="audio-control" class="nes-btn is-error" onclick="toggleMúsica()">🔇</button>
+    <button id="audio-control" type="button" class="nes-btn is-success" aria-label="Turn music off">🔊</button>
 
     <!-- PANTALLA DE INTRODUCCIÓN CINEMÁTICA -->
     <div id="screen-intro">
         <div class="panorama-viewer"></div>
+        <button id="intro-start-button" type="button" class="nes-btn is-primary" onclick="startAdventure()">START</button>
     </div>
 
     <!-- 1. PANTALLA INICIAL: IDIOMAS -->
@@ -326,7 +396,7 @@
             <h1>RODRI & CAIO's <i>Big Adventure</i></h1>
         </div>
 
-        <img src="FlorYas.png" alt="Dona Flor" id="flor-character">
+        <img src="assets/homepage/FlorYas.png" alt="Dona Flor" id="flor-character">
         
         <div class="lang-container" id="main-buttons">
             <button class="nes-btn is-primary" onclick="selectLanguage('es')">[ ESPAÑOL (ARG) ]</button>
@@ -340,24 +410,27 @@
         <div class="welcome-box" id="lbl-welcome"></div>
 
         <div class="menu-grid">
-            <a href="https://rh2bo.github.io/Rodri-CaioStheD/index.html" class="menu-card">
-                <img src="foto-save.png" alt="Save the Date">
-                <span id="lbl-save">SAVE THE DATE</span>
+            <a href="./save-the-date/index.html" class="menu-card is-complete">
+                <img src="assets/homepage/foto-save.png" alt="Save the Date">
+                <span class="menu-card-caption">
+                    <span id="lbl-save">SAVE THE DATE</span>
+                    <span class="completion-check" aria-hidden="true">✓</span>
+                </span>
             </a>
 
-            <a href="https://rh2bo.github.io/Rodri-CaioRSVP/" class="menu-card">
-                <img src="foto-rsvp.png" alt="RSVP">
+            <a href="./RSVP/index.html" class="menu-card">
+                <img src="assets/homepage/foto-rsvp.png" alt="RSVP">
                 <span id="lbl-rsvp">RSVP</span>
             </a>
 
             <!-- MODIFICADO: Ahora llama a una función JS en vez de abrir un PDF -->
             <div class="menu-card" onclick="openInformaciones()">
-                <img src="foto-info.png" alt="Informaciones">
+                <img src="assets/homepage/foto-info.png" alt="Informaciones">
                 <span id="lbl-info">INFORMACIONES</span>
             </div>
 
-            <a href="https://rh2bo.github.io/Rodri-CaioGifts/" class="menu-card">
-                <img src="foto-regalos.png" alt="Regalos">
+            <a href="./Gifts/index.html" class="menu-card">
+                <img src="assets/homepage/foto-regalos.png" alt="Regalos">
                 <span id="lbl-gifts">PRESENTES</span>
             </a>
         </div>
@@ -369,6 +442,7 @@
         
         <!-- Dos botones grandes de Dossier -->
         <div class="carmen-nav">
+            <button class="nes-btn is-primary carmen-btn pre-wedding-btn" type="button" disabled>Pre-wedding *COMING SOON*</button>
             <button class="nes-btn is-warning carmen-btn" id="btn-sub-evento" onclick="showDossier('evento')">📂 EL EVENTO</button>
             <button class="nes-btn is-primary carmen-btn" id="btn-sub-quests" onclick="showDossier('quests')">🗺️ MISIONES SECUNDARIAS</button>
         </div>
@@ -386,35 +460,34 @@
 </div>
 
 <script>
-    const miMusica = document.getElementById('bg-music');
-    const btnAudio = document.getElementById('audio-control');
     let currentLang = 'es';
+    let introStarted = false;
 
-    function toggleMúsica() {
-        if (miMusica.paused) {
-            miMusica.play().then(() => {
-                btnAudio.innerText = "🔊";
-                btnAudio.classList.remove('is-error');
-                btnAudio.classList.add('is-success');
-            }).catch(err => console.log(err));
-        } else {
-            miMusica.pause();
-            btnAudio.innerText = "🔇";
-            btnAudio.classList.remove('is-success');
-            btnAudio.classList.add('is-error');
+    function startAdventure() {
+        if (introStarted) {
+            return;
         }
-    }
 
-    window.addEventListener('DOMContentLoaded', () => {
+        introStarted = true;
         const introScreen = document.getElementById('screen-intro');
-        const logo = document.getElementById('main-logo');
-        const flor = document.getElementById('flor-character');
-        const buttons = document.getElementById('main-buttons');
+        document.getElementById('intro-start-button').remove();
+        document.querySelector('.panorama-viewer').classList.add('is-playing');
+        window.startSiteMusic();
 
         setTimeout(() => {
             introScreen.style.opacity = '0';
             setTimeout(() => {
                 introScreen.style.display = 'none';
+
+                const savedLanguage = sessionStorage.getItem('weddingSiteLanguage');
+                if (Object.prototype.hasOwnProperty.call(i18n, savedLanguage)) {
+                    selectLanguage(savedLanguage);
+                    return;
+                }
+
+                const logo = document.getElementById('main-logo');
+                const flor = document.getElementById('flor-character');
+                const buttons = document.getElementById('main-buttons');
                 setTimeout(() => {
                     logo.style.opacity = '1';
                     setTimeout(() => {
@@ -427,7 +500,7 @@
                 }, 400);
             }, 600);
         }, 9000); 
-    });
+    }
 
     const i18n = {
         es: {
@@ -477,7 +550,7 @@
                 <a href="https://maps.app.goo.gl/6QSq7Yt2yYkJqzeC9" target="_blank">VER EN MAPA MAPS ></a>
                 
                 <h3>⏰ CUÁNDO</h3>
-                <p>17/04/2025 a las 11:30 am<br><strong>¡Puntual!</strong> El regreso estimado será a las 20:00 hs.</p>
+                <p>17/04/2027 a las 11:30 am<br><strong>¡Puntual!</strong> El regreso estimado será a las 20:00 hs.</p>
                 
                 <h3>⚠️ DETALLES IMPORTANTES</h3>
                 <ul>
@@ -528,7 +601,7 @@
                 <a href="https://maps.app.goo.gl/6QSq7Yt2yYkJqzeC9" target="_blank">VER NO MAPA ></a>
                 
                 <h3>⏰ QUANDO</h3>
-                <p>17/04/2025 às 11:30 am<br><strong>Pontual!</strong> O retorno estimado será às 20:00 h.</p>
+                <p>17/04/2027 às 11:30 am<br><strong>Pontual!</strong> O retorno estimado será às 20:00 h.</p>
                 
                 <h3>⚠️ DETALLES IMPORTANTES</h3>
                 <ul>
@@ -579,7 +652,7 @@
                 <a href="https://maps.app.goo.gl/6QSq7Yt2yYkJqzeC9" target="_blank">OPEN MAP ></a>
                 
                 <h3>⏰ WHEN</h3>
-                <p>17/04/2025 at 11:30 am<br><strong>Be sharp!</strong> Estimated return is at 8:00 pm.</p>
+                <p>17/04/2027 at 11:30 am<br><strong>Be sharp!</strong> Estimated return is at 8:00 pm.</p>
                 
                 <h3>⚠️ IMPORTANT DETAILS</h3>
                 <ul>
@@ -627,7 +700,18 @@
 
     function selectLanguage(lang) {
         currentLang = lang;
-        if (miMusica.paused) { toggleMúsica(); }
+        sessionStorage.setItem('weddingSiteLanguage', lang);
+        document.documentElement.lang = lang;
+
+        const returnPath = sessionStorage.getItem('weddingReturnPath');
+        if (returnPath) {
+            sessionStorage.removeItem('weddingReturnPath');
+            const returnUrl = new URL(returnPath, window.location.href);
+            if (returnUrl.origin === window.location.origin && returnUrl.pathname !== window.location.pathname) {
+                window.location.replace(returnUrl.href);
+                return;
+            }
+        }
 
         const t = i18n[lang];
         document.getElementById('lbl-welcome').innerText = t.welcome;
@@ -671,6 +755,24 @@
             contentPanel.scrollTop = 0; // Vuelve arriba el scroll del dossier
         }, 150);
     }
+
+    if (new URLSearchParams(window.location.search).get('screen') === 'menu') {
+        document.getElementById('screen-intro').style.display = 'none';
+        sessionStorage.removeItem('weddingReturnPath');
+
+        const savedLanguage = sessionStorage.getItem('weddingSiteLanguage');
+        if (Object.prototype.hasOwnProperty.call(i18n, savedLanguage)) {
+            selectLanguage(savedLanguage);
+        } else {
+            document.getElementById('main-logo').style.opacity = '1';
+            document.getElementById('flor-character').style.opacity = '1';
+            document.getElementById('flor-character').style.filter = 'blur(0px)';
+            document.getElementById('main-buttons').style.opacity = '1';
+        }
+
+        window.addEventListener('load', () => window.startSiteMusic());
+    }
 </script>
+<script src="assets/site.js"></script>
 </body>
 </html>
