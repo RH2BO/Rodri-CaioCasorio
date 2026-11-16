@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Save the Date - Caio e Rodri</title>
+    <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #212529;
+            font-family: 'Press Start 2P', monospace;
+            padding: 15px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 11px;
+        }
+        .game-container {
+            max-width: 400px;
+            width: 100%;
+            min-height: 540px;
+            
+            /* Fondo inicial: Ciudad Maravillosa */
+            background-image: url('Fundorio.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            color: #212529;
+            padding: 25px 20px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: background-image 1s ease-in-out; /* Transición suave de fondo */
+        }
+        
+        #game-flow {
+            height: 100%;
+            min-height: 490px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen { 
+            display: none; 
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 490px; 
+            width: 100%;
+        }
+        .screen.active { 
+            display: flex; 
+        }
+        
+        .nes-balloon {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            transition: opacity 0.5s ease; /* Desvanecimiento suave */
+        }
+        .nes-balloon::after {
+            border-right-color: rgba(255, 255, 255, 0.95) !important;
+        }
+        
+        .bottom-content-wrapper {
+            margin-top: auto; 
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .btn-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: opacity 0.5s ease;
+        }
+        
+        .save-date-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px 10px;
+            border: 3px double #212529;
+            font-size: 11px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        /* Cuadro fijo final visible */
+        .save-date-box.show-fixed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .highlight-date {
+            color: #b01e23;
+            font-weight: bold;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+
+<audio id="bg-music" src="../assets/homepage/musica-retro.mp3" loop preload="auto"></audio>
+<button id="audio-control" type="button" class="nes-btn is-success" aria-label="Turn music off">🔊</button>
+
+<div class="game-container nes-container is-rounded" id="main-container">
+    
+    <div id="game-flow">
+
+        <div id="screen-intro1" class="screen active">
+            <div class="nes-balloon from-left">
+                <p id="text-intro1"></p>
+            </div>
+            <div class="btn-container">
+                <button class="nes-btn is-primary" id="btn-next1" onclick="nextScreen('intro1', 'intro2')"></button>
+            </div>
+        </div>
+
+        <div id="screen-intro2" class="screen">
+            <div class="nes-balloon from-left">
+                <p id="text-intro2"></p>
+            </div>
+            <div class="btn-container">
+                <button class="nes-btn is-primary" id="btn-next2" onclick="nextScreen('intro2', 'intro3')"></button>
+            </div>
+        </div>
+
+        <div id="screen-intro3" class="screen">
+            <div class="nes-balloon from-left">
+                <p id="text-intro3"></p>
+            </div>
+            <div class="btn-container">
+                <button class="nes-btn is-primary" id="btn-next3" onclick="nextScreen('intro3', 'final')"></button>
+            </div>
+        </div>
+
+        <div id="screen-final" class="screen">
+            <div class="nes-balloon from-left" id="balloon-final">
+                <p id="text-final-intro"></p>
+            </div>
+            <div class="bottom-content-wrapper">
+                <div class="save-date-box" id="box-date">
+                    </div>
+                <div class="btn-container" id="container-btn-final">
+                    <button class="nes-btn is-success" id="btn-reveal" onclick="ejecutarTransicionEfectiva()"></button>
+                </div>
+                <div style="width: 100%; margin-top: 12px;">
+                    <button class="nes-btn is-error" style="width: 100%;" id="btn-back-home" onclick="window.location.href='../index.html?screen=menu'"></button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const i18n = {
+        es: {
+            btnSiguiente: "[ SIGUIENTE ]",
+            btnRevelar: "[ DESCUBRIR FECHA ]",
+            btnBack: "[ VOLVER ]",
+            intro1: "¡Hola! Mi nombre es Dona Flor... 🐾",
+            intro2: "Como el libro, ¡yo tendré dos maridos que se casan! 👨‍❤️‍👨",
+            intro3: "Prepárense para una experiencia especial en Río de Janeiro... 🏖️",
+            finalIntro: "¡Reserven la fecha en la Ciudad Maravillosa! ✨",
+            dateBox: "✨ SAVE THE DATE ✨<br><div class='highlight-date'>17 de Abril de 2027</div>📍 Marina da Glória<br>🏙️ Rio de Janeiro<br><br>🥂 ¡Pronto la invitación oficial! 🐾<br><br><a href='Caio-Rodri-Save-The-Date-ES.png' download='Caio-Rodri-Save-The-Date-ES.png' class='nes-btn is-warning' style='text-decoration:none; display:inline-block; font-size:9px;'>[ DESCARGAR IMAGEN ]</a>"
+        },
+        pt: {
+            btnSiguiente: "[ SEGUINTE ]",
+            btnRevelar: "[ DESCOBRIR DATA ]",
+            btnBack: "[ VOLTAR ]",
+            intro1: "Olá! Meu nome é Dona Flor... 🐾",
+            intro2: "Como o livro, terei dois maridos que vão casar! 👨‍❤️‍👨",
+            intro3: "Preparem-se para uma experiencia especial no Rio de Janeiro... 🏖️",
+            finalIntro: "Reservem a data na Cidade Maravilhosa! ✨",
+            dateBox: "✨ SAVE THE DATE ✨<br><div class='highlight-date'>17 de Abril de 2027</div>📍 Marina da Glória<br>🏙️ Rio de Janeiro<br><br>🥂 Em breve o convite oficial! 🐾<br><br><a href='Caio-Rodri-Save-The-Date-PT.png' download='Caio-Rodri-Save-The-Date-PT.png' class='nes-btn is-warning' style='text-decoration:none; display:inline-block; font-size:9px;'>[ BAIXAR IMAGEM ]</a>"
+        },
+        en: {
+            btnSiguiente: "[ NEXT ]",
+            btnRevelar: "[ REVEAL DATE ]",
+            btnBack: "[ BACK ]",
+            intro1: "Hello! My name is Dona Flor... 🐾",
+            intro2: "Just like the book, I'll have two husbands marrying! 👨‍❤️‍👨",
+            intro3: "Get ready for a special experience in Rio de Janeiro... 🏖️",
+            finalIntro: "Save the date in the Wonderful City! ✨",
+            dateBox: "✨ SAVE THE DATE ✨<br><div class='highlight-date'>April 17, 2027</div>📍 Marina da Glória<br>🏙️ Rio de Janeiro<br><br>🥂 Official invitation coming soon! 🐾<br><br><a href='Caio-Rodri-Save-The-Date-EN.png' download='Caio-Rodri-Save-The-Date-EN.png' class='nes-btn is-warning' style='text-decoration:none; display:inline-block; font-size:9px;'>[ DOWNLOAD IMAGE ]</a>"
+        }
+    };
+
+    let currentLang = 'es';
+
+    function selectLanguage(lang) {
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        const t = i18n[lang];
+        
+        document.getElementById('text-intro1').innerText = t.intro1;
+        document.getElementById('btn-next1').innerText = t.btnSiguiente;
+        
+        document.getElementById('text-intro2').innerText = t.intro2;
+        document.getElementById('btn-next2').innerText = t.btnSiguiente;
+
+        document.getElementById('text-intro3').innerText = t.intro3;
+        document.getElementById('btn-next3').innerText = t.btnSiguiente;
+        
+        document.getElementById('text-final-intro').innerText = t.finalIntro;
+        document.getElementById('btn-reveal').innerText = t.btnRevelar;
+        document.getElementById('btn-back-home').innerText = t.btnBack;
+        document.getElementById('box-date').innerHTML = t.dateBox;
+
+    }
+
+    function nextScreen(current, next) {
+        document.getElementById(`screen-${current}`).classList.remove('active');
+        document.getElementById(`screen-${next}`).classList.add('active');
+    }
+
+    function ejecutarTransicionEfectiva() {
+        // 1. Desvanecer la burbuja de texto superior y el contenedor de botones finales
+        const balloon = document.getElementById('balloon-final');
+        const btnContainer = document.getElementById('container-btn-final');
+        
+        balloon.style.opacity = '0';
+        btnContainer.style.opacity = '0';
+        
+        // 2. Cambiar suavemente el fondo del contenedor principal al retrato familiar
+        const container = document.getElementById('main-container');
+        container.style.backgroundImage = "url('UsBG.png')";
+        
+        // 3. Remover los elementos ocultos y fijar el recuadro del Save the Date en su lugar
+        setTimeout(() => {
+            balloon.style.display = 'none';
+            btnContainer.style.display = 'none';
+            
+            document.getElementById('box-date').classList.add('show-fixed');
+        }, 500); // Sincronizado con la transición de opacidad
+    }
+
+    const savedLanguage = sessionStorage.getItem('weddingSiteLanguage');
+    if (Object.prototype.hasOwnProperty.call(i18n, savedLanguage)) {
+        selectLanguage(savedLanguage);
+    } else {
+        sessionStorage.setItem('weddingReturnPath', window.location.pathname + window.location.search + window.location.hash);
+        window.location.replace('../index.html');
+    }
+</script>
+<script src="../assets/site.js"></script>
+</body>
+</html>

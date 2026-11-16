@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>RSVP - Caio y Rodri!</title>
+    <!-- Librería de Estilos Pixel Art -->
+    <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #212529;
+            font-family: 'Press Start 2P', monospace;
+            padding: 15px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 11px;
+        }
+
+        .game-container {
+            max-width: 400px;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+    
+    /* Imagen por defecto (Ojos abiertos) */
+    background-image: url('1-abierto.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    color: #212529;
+    padding: 25px 20px;
+    border-radius: 4px;
+    box-sizing: border-box;
+
+    /* Activamos el intercambio de imágenes */
+    animation: parpadeoImagenes 4s infinite;
+}
+
+/* Animación que cambia de archivo bruscamente (sin transiciones suaves) */
+@keyframes parpadeoImagenes {
+    0%, 88% { 
+        background-image: url('1-abierto.png'); 
+    }
+    90% { 
+        background-image: url('2-semi.png'); 
+    }
+    92%, 95% { 
+        background-image: url('3-Fechado.png'); /* Ojo con la extensión .jpg aquí */
+    }
+    97% { 
+        background-image: url('2-semi.png'); 
+    }
+    100% { 
+        background-image: url('1-abierto.png'); 
+    }
+}
+
+        #game-flow {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Configuración para empujar los botones y elementos interactivos al fondo */
+        .screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 0;
+            width: 100%;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Asegura legibilidad del texto sobre la foto de fondo */
+        .nes-balloon {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            margin-bottom: 20px;
+        }
+
+        .nes-balloon::after {
+            border-right-color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        .bottom-content-wrapper {
+            margin-top: auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .btn-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-wrapper {
+            margin-bottom: 15px;
+        }
+
+        input,
+        select {
+            width: 100%;
+        }
+
+        .details-box {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 12px 10px;
+            border: 2px dashed #212529;
+            font-size: 10px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .details-info-line {
+            margin-top: 8px;
+            border-top: 1px dashed #212529;
+            padding-top: 8px;
+            color: #1b4f72;
+            font-weight: bold;
+        }
+
+        @media (max-height: 700px) {
+            .screen .nes-balloon {
+                font-size: 8.5px !important;
+                line-height: 1.35;
+                padding: 8px 10px !important;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/site.css">
+</head>
+
+<body>
+
+    <audio id="bg-music" src="../assets/homepage/musica-retro.mp3" loop preload="auto"></audio>
+    <button id="audio-control" type="button" class="nes-btn is-success" aria-label="Turn music off">🔊</button>
+
+    <div class="game-container nes-container is-rounded">
+
+        <div id="game-flow">
+
+            <!-- PANTALLA 1: INTRO (HISTORIA) -->
+            <div id="screen-intro" class="screen active">
+                <div class="nes-balloon from-left">
+                    <p id="text-intro"></p>
+                </div>
+                <div class="btn-container">
+                    <button class="nes-btn is-success" id="btn-comenzar"
+                        onclick="nextScreen('intro', 'nombre')"></button>
+                </div>
+            </div>
+
+            <!-- PANTALLA 2: NOMBRE -->
+            <div id="screen-nombre" class="screen">
+                <div class="nes-balloon from-left">
+                    <p id="text-nombre-q"></p>
+                </div>
+                <div class="bottom-content-wrapper">
+                    <div class="input-wrapper">
+                        <div class="nes-field">
+                            <input type="text" id="input-nombre" class="nes-input" placeholder="...">
+                        </div>
+                    </div>
+                    <div class="btn-container">
+                        <button class="nes-btn is-success" id="btn-nombre" onclick="saveNombre()"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANTALLA 3: LA FIESTA EN BARCO -->
+            <div id="screen-barco" class="screen">
+                <div class="nes-balloon from-left">
+                    <p id="text-barco"></p>
+                </div>
+                <div class="btn-container">
+                    <button class="nes-btn is-success" id="btn-next-barco"
+                        onclick="nextScreen('barco', 'travesia')"></button>
+                </div>
+            </div>
+
+            <!-- PANTALLA 4: DETALLES DEL PASEO -->
+            <div id="screen-travesia" class="screen">
+                <div class="nes-balloon from-left">
+                    <p id="text-travesia"></p>
+                </div>
+                <div class="btn-container">
+                    <button class="nes-btn is-success" id="btn-next-travesia"
+                        onclick="nextScreen('travesia', 'asistencia')"></button>
+                </div>
+            </div>
+
+            <!-- PANTALLA 5: CONFIRMACIÓN DE ASISTENCIA -->
+            <div id="screen-asistencia" class="screen">
+                <div class="nes-balloon from-left">
+                    <p id="text-asistencia-q"></p>
+                </div>
+                <div class="btn-container">
+                    <button class="nes-btn is-primary" id="btn-si" onclick="saveAsistencia('Sí')"></button>
+                    <button class="nes-btn is-error" id="btn-no" onclick="saveAsistencia('No')"></button>
+                </div>
+            </div>
+
+            <!-- PANTALLA 6: DETALLES DEL EVENTO -->
+            <div id="screen-detalles" class="screen">
+                <div class="nes-balloon from-left">
+                    <p id="text-detalles-intro"></p>
+                </div>
+                <div class="bottom-content-wrapper">
+                    <div class="details-box" id="box-detalles">
+                        <!-- Dinámico -->
+                    </div>
+                    <div class="btn-container">
+                        <button class="nes-btn is-success" id="btn-next-detalles"
+                            onclick="nextScreen('detalles', 'musica')"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANTALLA 7: PEDIDO DE MÚSICA -->
+            <div id="screen-musica" class="screen">
+                <div class="nes-balloon from-left">
+                    <p id="text-musica-q"></p>
+                </div>
+                <div class="bottom-content-wrapper">
+                    <div class="input-wrapper">
+                        <div class="nes-field">
+                            <input type="text" id="input-cancion" class="nes-input" placeholder="...">
+                        </div>
+                    </div>
+                    <div class="btn-container">
+                        <button class="nes-btn is-success" id="btn-confirmar-todo" onclick="confirmarTodo()"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANTALLA FINAL: ENVIANDO / GRACIAS -->
+            <div id="screen-final" class="screen">
+                <div class="nes-balloon from-left">
+                    <p id="final-text"></p>
+                </div>
+                <div class="bottom-content-wrapper">
+                    <div class="btn-container" style="text-align: center; margin-bottom: 20px;">
+                        <progress class="nes-progress is-primary" value="40" max="100" id="game-progress"></progress>
+                    </div>
+                    <div style="width: 100%; margin-top: 12px;">
+                        <button class="nes-btn is-error" style="width: 100%;" id="btn-final-back" onclick="window.location.href='../index.html?screen=menu'"></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const i18n = {
+            es: {
+                intro: "¡Hola! Soy Doña Flor. Mis papás van a celebrar su casamiento y me pidieron que confirme con ustedes algunos detalles sobre la celebración y su presencia en este momento tan importante para ellos.",
+                btnComenzar: "[ SIGUIENTE ]",
+                btnBack: "[ VOLVER ]",
+                qNombre: "¿A qué familia o tripulante tengo el honor de registrar hoy?",
+                btnSiguiente: "[ SIGUIENTE ]",
+                boatIntro: "¡La fiesta va a ser en un BARCO! Sabemos que esto puede ser un limitante para algunos de ustedes...",
+                tripInfo: "El paseo durará unas 8 horas y tendrá dos paradas en playas tranquilas. No saldremos por alta mar, por lo que no anticipamos mucho movimiento.",
+                qAsistencia: "Con esto en mente, ¿podemos contar con ustedes para esta aventura?",
+                btnSi: "[ SÍ, ¡ZARPAMOS! ]",
+                btnNo: "[ NO, ME QUEDO EN TIERRA ]",
+                qMusica: "Por último: ¿qué canción te gustaría escuchar en el barco?",
+                detallesIntro: "¡Excelente! Anoten bien las coordenadas de nuestro puerto de encuentro en la bitácora:",
+                detallesBox: "📅 17 de Abril de 2027<br>⏰ 11:30 AM<br>📍 Marina da Glória<br>🏙️ Rio de Janeiro<div class='details-info-line'>¡Recibirán más información en breve! ⚓</div>",
+                btnConfirmarTodo: "[ CONFIRMAR BITÁCORA ]",
+                guardando: "¡Enviando coordenadas al mapa del tesoro...!",
+                error: "¡Tormenta a la vista! Hubo un error al guardar. Intentá de nuevo.",
+                gracias: "¡Bitácora actualizada! Nos vemos en el puerto. ¡Guau! 🐾",
+                graciasNo: "¡Qué lástima! Informaré a mis papás. ¡Buen viento en tus viajes! ⚓"
+            },
+            pt: {
+                intro: "Olá! Sou a Dona Flor. Meus pais vão se casar e me pediram para confirmar com vocês alguns detalhes da celebração e a presença de vocês neste momento tão importante para eles.",
+                btnComenzar: "[ SEGUINTE ]",
+                btnBack: "[ VOLTAR ]",
+                qNombre: "Qual família ou tripulante tenho a honra de registrar hoje?",
+                btnSiguiente: "[ SEGUINTE ]",
+                boatIntro: "A festa vai ser em um BARCO! Sabemos que isso pode ser uma limitação para alguns de vocês...",
+                tripInfo: "O passeio vai durar cerca de 8 horas e terá duas paradas em praias tranquilas. Não vamos navegar em alto-mar, então não esperamos muito balanço.",
+                qAsistencia: "Com isso em mente, podemos contar com vocês nesta aventura?",
+                btnSi: "[ SIM, VAMOS ZARPAR! ]",
+                btnNo: "[ NÃO, FICO EM TERRA ]",
+                qMusica: "Por último: que música você gostaria de ouvir no barco?",
+                detallesIntro: "Excelente! Anotem bem as coordenadas do nosso porto de encontro no diário de bordo:",
+                detallesBox: "📅 17 de Abril de 2027<br>⏰ 11:30 AM<br>📍 Marina da Glória<br>🏙️ Rio de Janeiro<div class='details-info-line'>Vocês receberão mais informações em breve! ⚓</div>",
+                btnConfirmarTodo: "[ CONFIRMAR DIÁRIO ]",
+                guardando: "Enviando coordenadas para o mapa do tesouro...!",
+                error: "Tempestade à vista! Houve um erro ao salvar. Tente novamente.",
+                gracias: "Diário de bordo atualizado! Nos vemos no porto. Au au! 🐾",
+                graciasNo: "Que pena! Vou avisar meus pais. Bons ventos nas suas viagens! ⚓"
+            },
+            en: {
+                intro: "Hi! I'm Dona Flor. My parents are getting married, and they asked me to confirm a few details about the celebration with you and find out whether you can join them for this very special moment.",
+                btnComenzar: "[ NEXT ]",
+                btnBack: "[ BACK ]",
+                qNombre: "Which family or crew member do I have the honor of registering today?",
+                btnSiguiente: "[ NEXT ]",
+                boatIntro: "The party will be on a BOAT! We know this may be a concern for some of you...",
+                tripInfo: "The trip will last about 8 hours, with two stops at calm beaches. We won't be heading out into the open sea, so we don't expect much rocking.",
+                qAsistencia: "With that in mind, can we count on you to join us for this adventure?",
+                btnSi: "[ YES, WE SET SAIL! ]",
+                btnNo: "[ NO, STAYING ASHORE ]",
+                qMusica: "One last thing: what song would you like to hear on the boat?",
+                detallesIntro: "Excellent! Make sure to write down our meeting port coordinates in the logbook:",
+                detallesBox: "📅 April 17, 2027<br>⏰ 11:30 AM<br>📍 Marina da Glória<br>🏙️ Rio de Janeiro<div class='details-info-line'>You will receive more information shortly! ⚓</div>",
+                btnConfirmarTodo: "[ CONFIRM LOGBOOK ]",
+                guardando: "Sending coordinates to the treasure map...!",
+                error: "Storm ahead! There was an error saving. Please try again.",
+                gracias: "Logbook updated! See you at the port. Woof! 🐾",
+                graciasNo: "What a pity! I will let my dads know. Fair winds on your travels! ⚓"
+            }
+        };
+
+        let currentLang = 'es';
+        const rsvpData = {
+            nombre: '',
+            asistencia: '',
+            dieta: ''
+        };
+
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6-SweSTupk86RsDN1EjXGVZANVFKZtPymYWj3lCKySAF0x1imkVAUJPqM7eGInZrR/exec";
+
+        function selectLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            const t = i18n[lang];
+
+            document.getElementById('text-intro').innerText = t.intro;
+            document.getElementById('btn-comenzar').innerText = t.btnComenzar;
+            document.getElementById('btn-final-back').innerText = t.btnBack;
+            document.getElementById('text-nombre-q').innerText = t.qNombre;
+            document.getElementById('btn-nombre').innerText = t.btnSiguiente;
+            document.getElementById('text-barco').innerText = t.boatIntro;
+            document.getElementById('btn-next-barco').innerText = t.btnSiguiente;
+            document.getElementById('text-travesia').innerText = t.tripInfo;
+            document.getElementById('btn-next-travesia').innerText = t.btnSiguiente;
+            document.getElementById('text-asistencia-q').innerText = t.qAsistencia;
+            document.getElementById('btn-si').innerText = t.btnSi;
+            document.getElementById('btn-no').innerText = t.btnNo;
+            document.getElementById('text-detalles-intro').innerText = t.detallesIntro;
+            document.getElementById('box-detalles').innerHTML = t.detallesBox;
+            document.getElementById('btn-next-detalles').innerText = t.btnSiguiente;
+            document.getElementById('text-musica-q').innerText = t.qMusica;
+            document.getElementById('btn-confirmar-todo').innerText = t.btnConfirmarTodo;
+        }
+
+        function nextScreen(current, next) {
+            document.getElementById(`screen-${current}`).classList.remove('active');
+            document.getElementById(`screen-${next}`).classList.add('active');
+        }
+
+        function saveNombre() {
+            const nom = document.getElementById('input-nombre').value;
+            if (nom.trim() === "") {
+                alert(currentLang === 'en' ? "Write your family name!" : currentLang === 'pt' ? "Escreva o nome da sua família!" : "¡Escribí el nombre de tu familia!");
+                return;
+            }
+            rsvpData.nombre = nom;
+            nextScreen('nombre', 'barco');
+        }
+
+        function saveAsistencia(opcion) {
+            rsvpData.asistencia = opcion;
+            if (opcion === 'Sí') {
+                nextScreen('asistencia', 'detalles');
+            } else {
+                rsvpData.dieta = '';
+                nextScreen('asistencia', 'final');
+                document.getElementById('final-text').innerText = i18n[currentLang].guardando;
+                enviarDatosAGoogle(false);
+            }
+        }
+
+        function confirmarTodo() {
+            rsvpData.dieta = document.getElementById('input-cancion').value.trim();
+            nextScreen('musica', 'final');
+            document.getElementById('final-text').innerText = i18n[currentLang].guardando;
+            enviarDatosAGoogle(true);
+        }
+
+        function enviarDatosAGoogle(asiste) {
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(rsvpData)
+            })
+                .then(() => {
+                    document.getElementById('game-progress').value = 100;
+                    document.getElementById('final-text').innerText = asiste ? i18n[currentLang].gracias : i18n[currentLang].graciasNo;
+                })
+                .catch(err => {
+                    document.getElementById('game-progress').classList.add('is-error');
+                    document.getElementById('final-text').innerText = i18n[currentLang].error;
+                    console.error(err);
+                });
+        }
+
+        const savedLanguage = sessionStorage.getItem('weddingSiteLanguage');
+        if (Object.prototype.hasOwnProperty.call(i18n, savedLanguage)) {
+            selectLanguage(savedLanguage);
+        } else {
+            sessionStorage.setItem('weddingReturnPath', window.location.pathname + window.location.search + window.location.hash);
+            window.location.replace('../index.html');
+        }
+    </script>
+    <script src="../assets/site.js"></script>
+</body>
+
+</html>

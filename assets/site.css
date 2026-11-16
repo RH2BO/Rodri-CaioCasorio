@@ -1,0 +1,59 @@
+html {
+    min-height: 100%;
+    background: #212529;
+}
+
+body {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.game-container.nes-container {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    border-radius: 0;
+}
+
+@media (min-width: 600px) {
+    body {
+        padding: 24px;
+    }
+
+    .game-container.nes-container {
+        min-height: min(800px, calc(100vh - 48px));
+        min-height: min(800px, calc(100dvh - 48px));
+        border-radius: 4px;
+    }
+
+    #audio-control {
+        right: calc(50% - 228px);
+        bottom: max(36px, env(safe-area-inset-bottom));
+    }
+}
+
+#audio-control {
+    position: fixed;
+    top: auto;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 30;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+}
